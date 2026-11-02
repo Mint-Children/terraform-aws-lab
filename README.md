@@ -21,7 +21,7 @@ Terraform을 사용해 AWS 네트워크와 EC2 인프라를 코드로 구성하�
 - [x] IAM Identity Center와 AWS CLI SSO 프로필 설정
 - [x] AWS provider 초기화
 - [x] Terraform으로 VPC 생성 및 콘솔 확인
-- [ ] 서브넷 생성
+- [x] 서브넷 생성
 - [ ] 인터넷 게이트웨이 및 라우팅 구성
 - [ ] 보안 그룹 및 EC2 구성
 
@@ -30,6 +30,7 @@ Terraform을 사용해 AWS 네트워크와 EC2 인프라를 코드로 구성하�
 - 리전: 서울 (`ap-northeast-2`)
 - VPC CIDR: `10.0.0.0/16`
 - VPC 이름: `terraform-lab-vpc`
+- 서브넷 CIDR: `10.0.1.0/24`
 
 ## 문제 해결 기록
 

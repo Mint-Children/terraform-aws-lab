@@ -18,3 +18,12 @@ resource "aws_vpc" "lab" {
     Name = "terraform-lab-vpc"
   }
 }
+
+resource "aws_subnet" "public" {
+  vpc_id     = aws_vpc.lab.id
+  cidr_block = "10.0.1.0/24"
+
+  tags = {
+    Name = "terraform-lab-public-subnet"
+  }
+}
