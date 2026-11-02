@@ -1,0 +1,16 @@
+# Terraform provider 및 작업 파일
+.terraform/
+
+# 상태 파일과 백업
+*.tfstate
+*.tfstate.*
+
+# 저장된 실행 계획
+*.tfplan
+
+# 개인 설정과 변수값
+*.tfvars
+*.tfvars.json
+
+# 로그
+crash.log
