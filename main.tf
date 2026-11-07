@@ -78,3 +78,40 @@ resource "aws_security_group" "web" {
     Name = "terraform-lab-web-sg"
   }
 }
+
+data "aws_ami" "al2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-kernel-6.1-x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+}
+
+resource "aws_instance" "web" {
+  ami                         = data.aws_ami.al2023.id
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.web.id]
+  associate_public_ip_address = true
+  user_data                   = file("${path.module}/user-data.sh")
+
+  tags = {
+    Name = "terraform-lab-web"
+  }
+
+  credit_specification {
+    cpu_credits = "standard"
+  }
+}

@@ -47,3 +47,15 @@ Terraform을 사용해 AWS 네트워크와 EC2 인프라를 코드로 구성하�
 
 - Terraform 상태 파일과 개인 설정 파일은 Git에 포함하지 않습니다.
 - AWS 인증에는 IAM Identity Center의 임시 인증 정보를 사용합니다.
+
+resource "aws_instance" "web" {
+  ami                         = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.web.id]
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "terraform-lab-web"
+  }
+}
