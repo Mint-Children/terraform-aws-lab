@@ -1,61 +1,18 @@
 # Terraform AWS 인프라 실습
 
-Terraform을 사용해 AWS 네트워크와 EC2 인프라를 코드로 구성하는 개인 학습 프로젝트입니다.
+Terraform으로 AWS VPC와 Public·Private Subnet을 구성하고, Public Subnet의 EC2에 Nginx를 배포한 개인 실습입니다.
 
-## 목표
+## 실습 내용
 
-- AWS 콘솔에서 구성했던 네트워크를 Terraform 코드로 재현
-- Terraform의 초기화, 실행 계획, 적용 및 상태 관리 이해
-- 인프라 구성 과정과 발생한 문제를 기록
-
-## 사용 기술
-
-- Terraform
-- AWS VPC 및 EC2
-- AWS CLI와 IAM Identity Center
-- Git / GitHub
-
-## 진행 상황
-
-- [x] Terraform 및 AWS CLI 설치
-- [x] IAM Identity Center와 AWS CLI SSO 프로필 설정
-- [x] AWS provider 초기화
-- [x] Terraform으로 VPC 생성 및 콘솔 확인
-- [x] 서브넷 생성
-- [x] 인터넷 게이트웨이 및 라우팅 구성
-- [x] 보안 그룹 구성
-
-## 현재 구성
-
-- 리전: 서울 (`ap-northeast-2`)
-- VPC CIDR: `10.0.0.0/16`
-- VPC 이름: `terraform-lab-vpc`
-- 서브넷 CIDR: `10.0.1.0/24`
-- 인터넷 게이트웨이 연결
-- 퍼블릭 라우팅: `0.0.0.0/0` → 인터넷 게이트웨이
-- 보안 그룹: HTTP 80번 포트 인바운드 허용
+- Amazon Linux 2023 AMI를 조회해 기존 Public Subnet에 `t3.micro` EC2를 생성했습니다. `user_data`로 첫 부팅 시 Nginx를 설치하고, 외부 HTTP 접속을 확인했습니다.
+- 보안 그룹의 TCP 80 허용 규칙을 제거한 뒤 새 HTTP 연결이 차단되는 것을 확인했습니다.
+- Private Subnet에 별도 라우팅 테이블을 연결했습니다. AWS CLI로 Public에는 `0.0.0.0/0 → Internet Gateway` 경로가 있고, Private에는 VPC 내부 통신용 `local` 경로만 있는 것을 확인했습니다.
 
 ## 문제 해결 기록
 
-### Terraform provider 다운로드 연결 오류
-
-- **상황:** 최초 `terraform init` 실행 중 AWS provider 버전 목록을 가져오다가 연결이 끊김.
-- **조치:** 같은 명령어를 다시 실행해 초기화에 성공.
-- **확인된 내용:** 일시적인 연결 오류였을 가능성은 있지만, 정확한 원인은 확인하지 못함.
-
-## 보안
-
-- Terraform 상태 파일과 개인 설정 파일은 Git에 포함하지 않습니다.
-- AWS 인증에는 IAM Identity Center의 임시 인증 정보를 사용합니다.
-
-resource "aws_instance" "web" {
-  ami                         = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
-  instance_type               = "t3.micro"
-  subnet_id                   = aws_subnet.public.id
-  vpc_security_group_ids      = [aws_security_group.web.id]
-  associate_public_ip_address = true
-
-  tags = {
-    Name = "terraform-lab-web"
-  }
-}
+| 문제 | 확인 및 해결 |
+| --- | --- |
+| `terraform init` 중 AWS Provider 다운로드 연결이 끊겼습니다. | 같은 명령을 다시 실행해 초기화했습니다. 연결이 끊긴 원인은 확인하지 못했습니다. |
+| `user_date` 설정에서 `Unexpected attribute` 오류가 발생했습니다. | 오류 메시지에 나온 인수 이름을 확인하고 `user_data`로 수정했습니다. |
+| `terraform validate`에서 `user-data.sh`를 찾지 못했습니다. | 코드의 경로와 실제 파일 목록을 비교했습니다. `user-date.sh`를 `user-data.sh`로 변경한 뒤 검사를 통과했습니다. |
+| 보안 그룹의 `ingress` 블록을 주석 처리했는데 `terraform plan`에서 `No changes`가 나왔습니다. | `ingress = []`로 인바운드 규칙이 없는 상태를 명시했습니다. 실행 계획에서 TCP 80 허용 규칙이 제거되는 것을 확인한 뒤 적용했습니다. |
